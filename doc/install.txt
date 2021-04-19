@@ -1,0 +1,19 @@
+conda create -n env_DISCHARGEDB python=3.7
+activate env_DISCHARGEDB
+conda install -c anaconda xlrd
+conda install -c anaconda openpyxl
+conda install -c conda-forge xlsxwriter
+conda install -c conda-forge matplotlib
+conda install -c anaconda pandas 
+conda install -c anaconda scikit-learn
+conda install -c anaconda numpy
+conda install -c anaconda scipy==1.2.0
+conda install -c anaconda mysql-connector-python
+pip install sas7bdat
+pip install sas2db
+pip install cymysql
+pip install PyMySQL
+pip install mysqlclient
+
+# Optional
+conda install -c anaconda spyder
