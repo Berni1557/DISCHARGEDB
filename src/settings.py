@@ -5,8 +5,11 @@ from collections import defaultdict
 
 def initSettings():
     settings = defaultdict(lambda:None, {})
-    settings['folderpath_data'] = 'H:/cloud/cloud_data/Projects/DISCHARGEDB/data'
+    settings['folderpath_data'] = 'H:/cloud/cloud_data/Projects/DISCHARGEDB/code/data'
     settings['database'] = 'dischargedb'
+    settings['fp_download']='H:/cloud/cloud_data/Projects/DISCHARGEDB/agmednet/images'
+    settings['fp_images']='G:/discharge'
+    settings['fip_report']='H:/cloud/cloud_data/Projects/DISCHARGEDB/agmednet/report/AG_Mednet_Report_20210420_0805.xlsx'
     return settings
 
 # def initSettings():
