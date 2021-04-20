@@ -39,8 +39,6 @@ Flow:
 
 ## TODO
 
-- Init DB
-- Create github
-- Download script new image
 - Auto increment primary key  (https://stackoverflow.com/questions/5402949/mysql-cant-make-column-auto-increment)
-- 
+- Download images from agmednet and upload in database
+- Create log strategy

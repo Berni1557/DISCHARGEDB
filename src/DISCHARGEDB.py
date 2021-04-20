@@ -18,6 +18,10 @@ from settings import initSettings, saveSettings, loadSettings, fillSettingsTags
 import xlrd
 from helper import splitFilePath
 from agmednet import mednet_down
+import zipfile
+import logger
+import logging
+DBLogger = logging.getLogger('DISCHARGEDB')
 
 class DISCHARGEDB:
     host = ''
@@ -27,7 +31,7 @@ class DISCHARGEDB:
     database = ''
     db = None
     
-    def __init__(self, host="127.0.0.1", port='3306', user="root", password="123", database='dischargedb3'):
+    def __init__(self, host="127.0.0.1", port='3306', user="root", password="123", database='dischargedb'):
         self.host = host
         self.port = port
         self.user = user
@@ -38,6 +42,21 @@ class DISCHARGEDB:
     def download_images(self, settings):
         mednet_down(settings['fp_download'], settings['fp_images'], settings['fip_report'])
     
+    def update_images(self, settings):
+        fp_images = settings['fp_images']
+        fp_download = settings['fp_download']
+        files = glob(fp_download + '/*.zip')
+        for file in files:
+            DBLogger.debug('Extract: ' + file)
+            with zipfile.ZipFile(file,"r") as zip_ref:
+                zip_ref.extractall(fp_images)
+        
+    def update_dicom(self, settings):
+        
+        self = db
+        self.insertSQL(command="INSERT INTO dicom (site, patientid, count) VALUES (%s, %s, %s)", values=('123', '123', 4))
+
+        
     def createDB(self):
         command_create = "CREATE DATABASE if not exists " + self.database
         self.db.cursor().execute(command_create)
@@ -45,16 +64,17 @@ class DISCHARGEDB:
         command = "SET @@global.sql_mode= '';"
         self.db.cursor().execute(command)
         
-    def initeDB(self, settings):
+    def initDB(self, settings):
+
         # Upload xlsx files
         files = glob(settings['folderpath_xlsx'] + '/*.xlsx')
         for file in files:
             print('Upload: ' + file)
             self.xlxsTosql(database=self.database, 
-                            ip=self.host, 
+                            host=self.host, 
                             port=self.port, 
-                            un=self.user, 
-                            pw=self.password, 
+                            user=self.user, 
+                            password=self.password, 
                             fip_xlsx=file)
         # Upload sas files
         files = glob(settings['folderpath_sas'] + '/*.sas7bdat')
@@ -74,8 +94,17 @@ class DISCHARGEDB:
           password=self.password,
           database=self.database
         )
-        
-    def executeSQL(self, command='SELECT * FROM dischargedb3.site;'):
+
+    def insertSQL(self, command="INSERT INTO dicom (site, patientid) VALUES (%s, %s)", values=('John', 'Highway 21')):
+        try:
+            cursor = self.db.cursor()
+            cursor.execute(command, values)
+            self.db.commit()
+            print(cursor.rowcount, "record inserted.")
+        except:
+            print('Connection to mysql database failed.')
+            
+    def selectSQL(self, command='SELECT * FROM dischargedb3.site;'):
         try:
             cursor = self.db.cursor()
             cursor.execute(command)
@@ -100,14 +129,14 @@ class DISCHARGEDB:
             print('Upload sas table in database failed.')
         return r
             
-    def xlxsTosql(self, database='dischargedb3', ip='localhost', port='3306', un='root', pw='123', fip_xlsx='H:/cloud/cloud_data/Projects/DISCHARGEDB/data/tables/xlsx/discharge_master_01092020.xlsx'):
+    def xlxsTosql(self, database='dischargedb3', host='localhost', port='3306', user='root', password='123', fip_xlsx='H:/cloud/cloud_data/Projects/DISCHARGEDB/data/tables/xlsx/discharge_master_01092020.xlsx'):
         try:
             xls = xlrd.open_workbook(fip_xlsx)
             sheet_names = xls.sheet_names()
             for sheet_name in sheet_names:
                 df = pd.read_excel(fip_xlsx, sheet_name=sheet_name)
                 df.columns = df.columns.astype(str)
-                mysql_path = 'mysql://' + un + ':' + pw + '@' + ip + '/'+ database + '?charset=utf8'
+                mysql_path = 'mysql://' + user + ':' + password + '@' + host + '/'+ database + '?charset=utf8'
                 engine = create_engine(mysql_path)
                 _, filename, _ = splitFilePath(fip_xlsx)
                 table = (filename + '_' + sheet_name).lower()
@@ -128,21 +157,25 @@ class DISCHARGEDB:
         
 #if __name__=='__main__':   
 def main():
+    
     # Load settings
     filepath_settings = 'H:/cloud/cloud_data/Projects/DISCHARGEDB/code/data/settings.json'
     settings=initSettings()
     saveSettings(settings, filepath_settings)
     settings = fillSettingsTags(loadSettings(filepath_settings))
         
-    #### Downlaod new image #####
-    db = DISCHARGEDB(database=settings['database'])
-    db.download_images(settings)
+    #### Downlaod new images #####
+    # db = DISCHARGEDB(database=settings['database'])
+    # db.download_images(settings)
+    # db.update_images(settings)
+    # db.update_dicom(settings)
     
     #### Execute sript #####
     db = DISCHARGEDB(database=settings['database'])
     db.connectSQL()
-    db.createDB()
-    db.initeDB(settings)
+    
+    #db.createDB()
+    db.initDB(settings)
     db.executeScript(fip_script='H:/cloud/cloud_data/Projects/DISCHARGEDB/src/scripts/set_primary_key.sql', replace=('TABLE_VAR','v_a06_docu_hosp'))
     
     

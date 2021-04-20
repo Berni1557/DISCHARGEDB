@@ -16,7 +16,7 @@ def uid_down(uids, fp_download):
     cmd1 = 'chrome "https://judi.agmednet.net/storag/discharge/wado?requestType=WADO&studyUID='
     cmd2 = '&seriesUID=&objectUID=&contentType=application/x-zip-compressed"'  
     options = ''   
-    sleep_seconds = 5
+    sleep_seconds = 10
     for uid in uids: 
         print('uid', uid)                      
         try:
