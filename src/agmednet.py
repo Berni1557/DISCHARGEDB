@@ -17,6 +17,10 @@ def uid_down(uids, fp_download):
     cmd2 = '&seriesUID=&objectUID=&contentType=application/x-zip-compressed"'  
     options = ''   
     sleep_seconds = 10
+    
+    if not os.path.isdir(fp_download):
+        raise ValueError("Download directory " + fp_download + ' does not exist!')
+        
     for uid in uids: 
         print('uid', uid)                      
         try:
@@ -35,6 +39,7 @@ def uid_down(uids, fp_download):
                 raise
             except:
                 print("Unexpected error:", sys.exc_info()[0])       
+        time.sleep(sleep_seconds)
         target_file = os.path.join(fp_download,uid+'.zip')
         if os.path.isfile(target_file):         
             print ('++')
@@ -44,11 +49,13 @@ def uid_down(uids, fp_download):
         
 def mednet_down(fp_download='H:/cloud/cloud_data/Projects/DISCHARGEDB/agmednet/images', fp_images='G:/discharge', fip_report='H:/cloud/cloud_data/Projects/DISCHARGEDB/agmednet/report/AG_Mednet_Report_20210420_0805.xlsx'):
     df = pd.read_excel(fip_report, sheet_name = 'Sheet 1') 
+    df = df[df['Transmission Status']=='SUCCESS']
     df.drop_duplicates('Study Instance UID', inplace=True, keep='first')
     uids_exist =  [splitFolderPath(f)[1] for f in glob(fp_images + '/*')]
     uids_exist_idx = df['Study Instance UID'].isin(uids_exist)
     df_down = df[~uids_exist_idx]
-    uids = df_down['Study Instance UID'].tolist()   
+    uids = df_down['Study Instance UID'].tolist()  
+    print('Downloading ' + str(len(uids)) + ' images.')
     uid_down(uids, fp_download)
     
 #mednet_down(fp_download='G:/discharge',fip_report='H:/cloud/cloud_data/Projects/DISCHARGEDB/agmednet/report/AG_Mednet_Report_20210420_0805.xlsx')

@@ -1,0 +1,1 @@
+CREATE VIEW agmednet_download_failed AS SELECT * FROM agmednet_01 WHERE study_instance_uid NOT IN (SELECT study_instance_uid FROM dicom)

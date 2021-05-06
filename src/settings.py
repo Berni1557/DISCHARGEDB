@@ -5,11 +5,18 @@ from collections import defaultdict
 
 def initSettings():
     settings = defaultdict(lambda:None, {})
-    settings['folderpath_data'] = 'H:/cloud/cloud_data/Projects/DISCHARGEDB/code/data'
+    settings['folderpath_data'] = 'H:/cloud/cloud_data/Projects/DISCHARGEDB/data'
     settings['database'] = 'dischargedb'
     settings['fp_download']='H:/cloud/cloud_data/Projects/DISCHARGEDB/agmednet/images'
     settings['fp_images']='G:/discharge'
     settings['fip_report']='H:/cloud/cloud_data/Projects/DISCHARGEDB/agmednet/report/AG_Mednet_Report_20210420_0805.xlsx'
+    settings['dicom_tags'] = ['Site', 'PatientID', 'StudyInstanceUID', 'SeriesInstanceUID', 'AcquisitionDate',
+                              'SeriesNumber', 'Count', 'SeriesDescription', 'Modality', 'AcquisitionTime', 'NumberOfFrames',
+                              'Rows', 'Columns', 'InstanceNumber', 'PatientSex', 'PatientAge', 'ProtocolName',
+                              'ContrastBolusAgent', 'ImageComments', 'PixelSpacing', 'SliceThickness', 'FilterType',
+                              'ConvolutionKernel', 'ReconstructionDiameter', 'RequestedProcedureDescription',
+                              'ContrastBolusStartTime', 'NominalPercentageOfCardiacPhase', 'CardiacRRIntervalSpecified', 'StudyDate',
+                              'SliceSpacing']
     return settings
 
 # def initSettings():
@@ -60,6 +67,8 @@ def fillSettingsTags(settings):
     
     settings['folderpath_sas'] = os.path.join(settings['folderpath_data'], 'tables/sas')
     settings['folderpath_xlsx'] = os.path.join(settings['folderpath_data'], 'tables/xlsx')
+    settings['AG_Mednet_Report_01'] = os.path.join(settings['folderpath_data'], 'agmednet/AG_Mednet_Report_20210422_2043_01.xlsx')
+    settings['AG_Mednet_Report_02'] = os.path.join(settings['folderpath_data'], 'agmednet/AG_Mednet_Report_20210422_2043_02.xlsx')
     return settings
 
 # def fillSettingsTags(settings):

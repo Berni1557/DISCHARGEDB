@@ -14,6 +14,7 @@ pip install sas2db
 pip install cymysql
 pip install PyMySQL
 pip install mysqlclient
+conda install -c conda-forge tqdm
 
 # Optional
 conda install -c anaconda spyder
