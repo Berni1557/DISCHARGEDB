@@ -5,7 +5,7 @@ import logging
 logger = logging.getLogger('DISCHARGEDB')
 logger.setLevel(logging.DEBUG)
 # create file handler which logs even debug messages
-fh = logging.FileHandler('H:/cloud/cloud_data/Projects/DISCHARGEDB/code/src/log/DISCHARGEDB_log.log')
+fh = logging.FileHandler('C:/DISCHARGEDB/code/src/log/DISCHARGEDB_log.log')
 fh.setLevel(logging.DEBUG)
 # create console handler with a higher log level
 ch = logging.StreamHandler()

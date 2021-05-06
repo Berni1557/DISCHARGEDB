@@ -69,6 +69,11 @@ Flow:
 
   - Save the file and restart the Apache server using the XAMPP control panel.
 
+- Replace MariaDB by MySQL by following this instructions (https://gist.github.com/alfhh/92ae13b2592ac654cfe924319259136f)
+- config.php set $cfg['Servers'][$i]['AllowNoPassword'] = TRUE; to allow no password
+- To avoit the phpmyadmin error "The secret passphrase in configuration (blowfish_secret) is too short" follow instuctions here (https://www.mysysadmintips.com/linux/servers/779-the-secret-passphrase-in-configuration-blowfish-secret-is-too-short)
+- To avoid error "The phpMyAdmin configuration storage is not completely configured, some extended features have been deactivated" follw instructions here (https://stackoverflow.com/questions/33824224/phpmyadmin-configuration-storage-is-not-completely-configured)
+
 - Add user:
 
   - Login as root into database with: mysql -u root -p

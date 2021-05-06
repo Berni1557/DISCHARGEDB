@@ -5,11 +5,11 @@ from collections import defaultdict
 
 def initSettings():
     settings = defaultdict(lambda:None, {})
-    settings['folderpath_data'] = 'H:/cloud/cloud_data/Projects/DISCHARGEDB/data'
+    settings['folderpath_data'] = 'C:/DISCHARGEDB/data'
     settings['database'] = 'dischargedb'
-    settings['fp_download']='H:/cloud/cloud_data/Projects/DISCHARGEDB/agmednet/images'
-    settings['fp_images']='G:/discharge'
-    settings['fip_report']='H:/cloud/cloud_data/Projects/DISCHARGEDB/agmednet/report/AG_Mednet_Report_20210420_0805.xlsx'
+    settings['fp_download']='C:/DISCHARGEDB/agmednet/images'
+    settings['fp_images']='F:/discharge'
+    settings['fip_report']='C:/DISCHARGEDB/agmednet/report/AG_Mednet_Report_20210420_0805.xlsx'
     settings['dicom_tags'] = ['Site', 'PatientID', 'StudyInstanceUID', 'SeriesInstanceUID', 'AcquisitionDate',
                               'SeriesNumber', 'Count', 'SeriesDescription', 'Modality', 'AcquisitionTime', 'NumberOfFrames',
                               'Rows', 'Columns', 'InstanceNumber', 'PatientSex', 'PatientAge', 'ProtocolName',

@@ -24,6 +24,7 @@ import logging
 from datetime import datetime
 from tqdm import tqdm
 DBLogger = logging.getLogger('DISCHARGEDB')
+from dicom import extractDICOM_sql, extractMissingSeries
 
 class DISCHARGEDB:
     host = ''
@@ -42,6 +43,16 @@ class DISCHARGEDB:
         self.db = None
         
     def download_images(self, settings):
+        """Downlaod all missing studies from agmednet into images folder
+        Missing stuies are all studies on agmednet which ar not in the discharge folder
+    
+        Parameters:
+        settings (dict): Settings dictionary
+    
+        Returns:
+        int:Returning value
+    
+       """
         mednet_down(settings['fp_download'], settings['fp_images'], settings['fip_report'])
     
     def update_images(self, settings):
@@ -165,37 +176,36 @@ class DISCHARGEDB:
         self.resetAutoIncrement(tablename='agmednet_02', idname='idagmednet_02')
         
     def update_dicom(self, settings):
-        
-        
-        df = pd.read_excel('H:/cloud/cloud_data/Projects/DISCHARGEDB/code/data/tables/xlsx/discharge_dicom_01092020.xlsx')
-        df.drop('Unnamed: 0', axis=1, inplace=True)
-        df_sub = df[0:300]
-        df_sub = df_sub.where(pd.notnull(df_sub), None)
-        
-        self = db
-        #self.insertSQL(command="INSERT INTO dicom (site, patientid, count) VALUES (%s, %s, %s)", values=('123', '123', 4))
-        keys = ['site', 'patientid', 'studyinstanceuid', 'seriesinstanceuid', 'acquisitiondate', 'seriesnumber', 'count', 'seriesdescription',
-                'modality', 'acquisitiontime', 'numberofframes', 'rowsdicom', 'columnsdicom', 'instancenumber', 'patientsex', 'patientage', 'protocolname',
-                'contrastbolusagent', 'imagecomments', 'pixelspacing', 'slicethickness ', 'filtertype', 'convolutionkernel', 'reconstructiondiameter', 
-                'requestedproceduredescription', 'contrastbolusstarttime','nominalpercentageofcardiacphase', 'cardiacrrintervalspecified',
-                'studydate', 'slicespacing']
+        # self = discharge
+        self.connectSQL()
+        keys = ['site', 'patient_id', 'study_instance_uid', 'series_instance_uid', 'acquisition_date', 'series_number', 
+                'count', 'series_description','modality', 'acquisition_time', 'number_of_frames', 'rows_dicom', 'columns_dicom', 
+                'instance_number', 'patient_sex', 'patient_age', 'protocol_name','contrast_bolus_agent', 'image_comments', 
+                'pixel_spacing', 'slice_thickness ', 'filter_type', 'convolution_kernel', 'reconstruction_diameter', 
+                'requested_procedure_description', 'contrast_bolus_start_time','nominal_percentage_of_cardiac_phase', 
+                'cardiac_rr_interval_specified', 'study_date', 'slice_spacing']
         keys_str = '(' + ', '.join(keys) + ')'
         values = ['%s' for i in range(len(keys))]
         values_str = '(' + ', '.join(values) + ')'
-        command="INSERT IGNORE INTO dicom " + keys_str + " VALUES " + values_str
-
-        for index, row in df_sub.iterrows():
-            vallist = list(row)
-            vallist[9] = datetime.now(tz=None)
-            vallist[25] = datetime.now(tz=None)
+        command="REPLACE INTO dicom " + keys_str + " VALUES " + values_str
+        SeriesInstanceUIDList = list(self.getTable(tablename='dicom')['series_instance_uid'])
+        df_dicom_missing = extractMissingSeries(settings, SeriesInstanceUIDList)
+        pbar = tqdm(total=len(df_dicom_missing))
+        pbar.set_description("Update dicom")
+        for indexM, rowM in df_dicom_missing.iterrows():
+            pbar.update(1)
+            tags = extractDICOM_sql(settings, rowM['StudyInstanceUID'], rowM['SeriesInstanceUID'])
+            vallist = list(tags.values())
             val = tuple(vallist)
-            try:
-                cursor = self.db.cursor()
-                cursor.execute(command, val)
-                self.db.commit()
-                print(cursor.rowcount, "record inserted.")
-            except:
-                print('Row already exist.')
+            conn = self.engine.connect()
+            trans = conn.begin()
+            conn.execute(command, val)
+            trans.commit()
+            conn.close()
+        pbar.close()    
+        
+        # Reset auto increment
+        self.resetAutoIncrement(tablename='dicom', idname='iddicom')
         
     def createDB(self):
         command_create = "CREATE DATABASE if not exists " + self.database
@@ -228,12 +238,6 @@ class DISCHARGEDB:
                             fip_sas=file)          
         
     def connectSQL(self):
-        # self.db = mysql.connector.connect(
-        #   host=self.host,
-        #   user=self.user,
-        #   password=self.password,
-        #   database=self.database
-        # )
         mysql_path = 'mysql://' + self.user + ':' + self.password + '@' + self.host + '/'+ self.database + '?charset=utf8'
         self.engine = create_engine(mysql_path)
 
@@ -307,16 +311,18 @@ class DISCHARGEDB:
 def main():
     
     # Load settings
-    filepath_settings = 'H:/cloud/cloud_data/Projects/DISCHARGEDB/code/data/settings.json'
+    filepath_settings = 'C:/DISCHARGEDB/code/data/settings.json'
     settings=initSettings()
     saveSettings(settings, filepath_settings)
     settings = fillSettingsTags(loadSettings(filepath_settings))
         
-    #### Downlaod new images from ag mednet #####
-    #discharge = DISCHARGEDB(database=settings['database'])
+    # Downlaod new images from ag mednet
+    discharge = DISCHARGEDB(database=settings['database'])
     #discharge.download_images(settings)
     #discharge.update_images(settings)
-    #discharge.update_dicom(settings)
+    
+    discharge.truncateTable(tablename='dicom')
+    discharge.update_dicom(settings)
     
     ### Update agmednet reports ###
     discharge = DISCHARGEDB(host="127.0.0.1", port='3306', user="root", password="123", database=settings['database'])

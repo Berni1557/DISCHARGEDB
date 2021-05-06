@@ -15,6 +15,7 @@ pip install cymysql
 pip install PyMySQL
 pip install mysqlclient
 conda install -c conda-forge tqdm
+conda install -c conda-forge pydicom
 
 # Optional
 conda install -c anaconda spyder
